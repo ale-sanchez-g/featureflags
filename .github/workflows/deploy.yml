@@ -28,7 +28,10 @@ jobs:
         run: |
           npm install
           npm run build
-          npm run deploy -- -m "Deploy React app to GitHub Pages"
+          npx gh-pages -d build -m "Deploy React app to GitHub Pages"
         working-directory: ./simple-calculator
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_ASKPASS: echo
+          GIT_USERNAME: ${{ github.actor }}
+          GIT_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
