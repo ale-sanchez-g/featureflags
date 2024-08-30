@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/ale-sanchez-g/featureflags/static/css/main.947794d7.css",
-    "main.js": "/ale-sanchez-g/featureflags/static/js/main.bdecac86.js",
-    "static/js/453.d832c36a.chunk.js": "/ale-sanchez-g/featureflags/static/js/453.d832c36a.chunk.js",
-    "index.html": "/ale-sanchez-g/featureflags/index.html",
-    "main.947794d7.css.map": "/ale-sanchez-g/featureflags/static/css/main.947794d7.css.map",
-    "main.bdecac86.js.map": "/ale-sanchez-g/featureflags/static/js/main.bdecac86.js.map",
-    "453.d832c36a.chunk.js.map": "/ale-sanchez-g/featureflags/static/js/453.d832c36a.chunk.js.map"
+    "main.css": "/featureflags/static/css/main.947794d7.css",
+    "main.js": "/featureflags/static/js/main.7a9abd19.js",
+    "static/js/453.d832c36a.chunk.js": "/featureflags/static/js/453.d832c36a.chunk.js",
+    "index.html": "/featureflags/index.html",
+    "main.947794d7.css.map": "/featureflags/static/css/main.947794d7.css.map",
+    "main.7a9abd19.js.map": "/featureflags/static/js/main.7a9abd19.js.map",
+    "453.d832c36a.chunk.js.map": "/featureflags/static/js/453.d832c36a.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.947794d7.css",
-    "static/js/main.bdecac86.js"
+    "static/js/main.7a9abd19.js"
   ]
 }
