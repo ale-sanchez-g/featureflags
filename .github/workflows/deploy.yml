@@ -19,20 +19,16 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: 
-          cd simple-calculator
-          npm install
+        run: npm install
+        working-directory: ./simple-calculator
 
       - name: Build the React app
-        run: 
-          cd simple-calculator          
-          npm run build
+        run: npm run build
+        working-directory: ./simple-calculator
 
       - name: Deploy to GitHub Pages
         if: success()
-        run: 
-          cd simple-calculator          
-          npm run deploy
-          mv .* * ../
+        run: npm run deploy
+        working-directory: ./simple-calculator
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
