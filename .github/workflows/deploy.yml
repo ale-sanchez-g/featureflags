@@ -1,0 +1,37 @@
+name: Deploy React App to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Set this to your default branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: 
+          cd simple-calculator
+          npm install
+
+      - name: Build the React app
+        run: 
+          cd simple-calculator          
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        if: success()
+        run: 
+          cd simple-calculator          
+          npm run deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
