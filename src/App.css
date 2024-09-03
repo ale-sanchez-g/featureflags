@@ -16,7 +16,6 @@
   position: -webkit-sticky; /* Add -webkit-sticky for Safari on iOS 7+ */
   position: sticky;
   top: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .calculator {
@@ -67,4 +66,9 @@ button:active {
 
 .zero {
   grid-column: span 2;
+}
+
+button.special-key {
+  background-color: #bf11d3;
+  color: #fff;
 }

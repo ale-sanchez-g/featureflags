@@ -66,7 +66,7 @@ function App() {
             <button onClick={() => handleClick('/')}>/</button>
             <button onClick={() => handleClick('*')}>*</button>
             <button onClick={() => handleClick('-')}>-</button>
-            
+
             <button onClick={() => handleClick('7')}>7</button>
             <button onClick={() => handleClick('8')}>8</button>
             <button onClick={() => handleClick('9')}>9</button>
@@ -80,11 +80,11 @@ function App() {
             <button onClick={() => handleClick('1')}>1</button>
             <button onClick={() => handleClick('2')}>2</button>
             <button onClick={() => handleClick('3')}>3</button>
-            {advanceFunctions && <button onClick={() => handleClick('(')}>(</button>}
+            {advanceFunctions && <button className="special-key" onClick={() => handleClick('(')}>(</button>}
 
             <button className="zero" onClick={() => handleClick('0')}>0</button>
             <button onClick={() => handleClick('.')}>.</button>
-            {advanceFunctions && <button onClick={() => handleClick(')')}>)</button>}
+            {advanceFunctions && <button className="special-key" onClick={() => handleClick(')')}>)</button>}
           </div>
         </div>
       </div>
