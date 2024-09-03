@@ -6,6 +6,19 @@
   background-color: #282c34;
 }
 
+.welcome-title {
+  text-align: center;
+  font-size: 24px;
+  color: #fff;
+  background-color: #282c34;
+  width: 100%;
+  padding: 10px 0;
+  position: -webkit-sticky; /* Add -webkit-sticky for Safari on iOS 7+ */
+  position: sticky;
+  top: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .calculator {
   width: 300px;
   background: #fff;
