@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { useFlags } from 'launchdarkly-react-client-sdk';
+import React, { useState, useEffect } from 'react';
+import { useFlags, useLDClient } from 'launchdarkly-react-client-sdk';
 import NameInput from './NameInput';
+import { getBrowserInfo } from './browserInfo';
 
 import './App.css';
 
 function App() {
   const { showNameInput } = useFlags();
+  const ldClient = useLDClient();
   const [name, setName] = useState('');
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
@@ -14,6 +16,20 @@ function App() {
     setName(name);
   };
 
+  useEffect(() => {
+    if (name) {
+      const { browserName, osName, platform } = getBrowserInfo();
+      ldClient.identify({
+        key: `context-key-${name.toLowerCase()}`,
+        custom: {
+          browser: browserName,
+          os: osName,
+          device: platform,
+        },
+      });
+    }
+  }, [ldClient, name]);
+  
   if (showNameInput && !name) {
     return <NameInput onSubmit={handleNameSubmit} />;
   }
