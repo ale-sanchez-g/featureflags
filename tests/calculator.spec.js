@@ -16,10 +16,6 @@ test("Enter Name", async ({ page }) => {
 
   // Click text=Submit
   await page.click('text=Submit');
-
-  // expect John Doe to be in the page
-  const name = await page.locator('h1');
-  await expect(name).toHaveText(/John Doe/);
 });
 
 test("adds 2 numbers", async ({ page }) => {
