@@ -2,7 +2,7 @@ name: Run Playwright Tests
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Runs every 5 minutes
+    - cron: '*/15 * * * *'  # Runs every 5 minutes
 
 jobs:
   test:
@@ -19,6 +19,9 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+
+    - name: Install playwrigth
+      run: npx playwright install --with-deps
 
     - name: Run Playwright tests
       run: npx playwright test tests/classicProd.spec.js
