@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFlags } from 'launchdarkly-react-client-sdk';
-
+import sendMetricToDynatrace from './SendMetrics.js';
 
 const ClassicCalculator = () => {
     const { advanceFunctions } = useFlags();
@@ -18,8 +18,12 @@ const ClassicCalculator = () => {
 
     const handleCalculate = () => {
     try {
+        let startTime = new Date()
         // eslint-disable-next-line no-eval
         setResult(eval(input).toString());
+        let endTime = new Date()
+        var diff = endTime - startTime;
+        sendMetricToDynatrace('classicCalculation,app="calculator"', diff)
     } catch (error) {
         setResult('Error');
     }
