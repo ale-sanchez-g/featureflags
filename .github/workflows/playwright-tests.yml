@@ -1,6 +1,11 @@
 name: Run Playwright Tests
 
 on:
+  # on demand
+  workflow_dispatch:
+  # on page build
+  page_build:  
+  # scheduled
   schedule:
     - cron: '*/15 * * * *'  # Runs every 5 minutes
 jobs:
