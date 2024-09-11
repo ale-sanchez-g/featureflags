@@ -1,6 +1,8 @@
 # featureflags
 example to use feature management on a react web calculator
 
+[![Run Playwright Tests](https://github.com/ale-sanchez-g/featureflags/actions/workflows/playwright-tests.yml/badge.svg)](https://github.com/ale-sanchez-g/featureflags/actions/workflows/playwright-tests.yml)
+
 ## How to run the project
 1. Clone the repository
 2. Run `npm install`
