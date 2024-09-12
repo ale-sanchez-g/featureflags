@@ -7,7 +7,7 @@ on:
   page_build:  
   # scheduled
   schedule:
-    - cron: '* * * 1 *' 
+    - cron: '*/15 * * * *' # every 15 minutes
 jobs:
   playwright:
     name: 'Playwright Tests'
