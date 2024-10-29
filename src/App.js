@@ -37,7 +37,7 @@ function App() {
   if (calculatorStyle) {
     return (
       <div className="App">
-        <ClassicCalculator />
+        <ClassicCalculator client={ldClient} />
       </div>
     );
   } else {

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFlags } from 'launchdarkly-react-client-sdk';
 // import sendMetricToDynatrace from './SendMetrics.js';
 
-const ClassicCalculator = () => {
+const ClassicCalculator = ({ client }) => {
     const { advanceFunctions } = useFlags();
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
@@ -24,6 +24,8 @@ const ClassicCalculator = () => {
         let endTime = new Date()
         var diff = endTime - startTime;
         console.log('Time taken to calculate: ', diff);
+        // Send data to LaunchDarkly using track
+        client.track('calculationTime', { duration: diff });
         // sendMetricToDynatrace('classicCalculation,app="calculator"', diff)
     } catch (error) {
         setResult('Error');
