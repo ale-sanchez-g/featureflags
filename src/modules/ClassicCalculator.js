@@ -31,6 +31,8 @@ const ClassicCalculator = ({ client }) => {
         // sendMetricToDynatrace('classicCalculation,app="calculator"', diff)
     } catch (error) {
         setResult('Error');
+        // Send data to LaunchDarkly using track
+        client.track('errorCalculation', { calcError: true });
     }
     };
 
