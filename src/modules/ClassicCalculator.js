@@ -19,10 +19,12 @@ const ClassicCalculator = ({ client }) => {
     const handleCalculate = () => {
     try {
         let startTime = new Date()
+        // Add random Synthetic delay to simulate a slow calculation in metrics
+        const delay = Math.floor(Math.random() * 5000) + 1000;
         // eslint-disable-next-line no-eval
         setResult(eval(input).toString());
         let endTime = new Date()
-        var diff = endTime - startTime;
+        var diff = (endTime - startTime) + delay;
         console.log('Time taken to calculate: ', diff);
         // Send data to LaunchDarkly using track
         client.track('calculationTime', { duration: diff });
