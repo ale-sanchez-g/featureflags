@@ -43,7 +43,7 @@ function App() {
   } else {
     return (
       <div className="App">
-        <ScientificCalculator />
+        <ScientificCalculator client={ldClient} />
       </div>
     );
   }

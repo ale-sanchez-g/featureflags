@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFlags } from 'launchdarkly-react-client-sdk';
 
-const ScientificCalculator = () => {
+const ScientificCalculator = ({ client }) => {
     const { advanceFunctions } = useFlags();
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
@@ -17,15 +17,27 @@ const ScientificCalculator = () => {
 
     const handleCalculate = () => {
         try {
+            let startTime = new Date()
+            // Add random Synthetic delay to simulate a slow calculation in metrics
+            // const delay = Math.floor(Math.random() * 5000) + 1000;
             // eslint-disable-next-line no-eval
             setResult(eval(input).toString());
+            let endTime = new Date()
+            let diff = (endTime - startTime);
+            console.log('Time taken to calculate: ', diff);
+            // Send data to LaunchDarkly using track
+            client.track('calculationTime', { duration: diff });
+            // sendMetricToDynatrace('classicCalculation,app="calculator"', diff)
         } catch (error) {
             setResult('Error');
+            // Send data to LaunchDarkly using track
+            client.track('errorCalculation', { calcError: true });
         }
     };
 
     const handleScientificFunction = (func) => {
         try {
+            let startTime = new Date()
             // eslint-disable-next-line no-eval
             const value = eval(input);
             let result;
@@ -55,8 +67,14 @@ const ScientificCalculator = () => {
                     result = 'Error';
             }
             setResult(result.toString());
+            let endTime = new Date()
+            let diff = (endTime - startTime);
+            // Send data to LaunchDarkly using track
+            client.track('calculationTime', { duration: diff });
         } catch (error) {
             setResult('Error');
+            // Send data to LaunchDarkly using track
+            client.track('errorCalculation', { calcError: true });
         }
     };
 
