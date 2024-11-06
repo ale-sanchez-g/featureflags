@@ -1,45 +1,51 @@
 // @ts-check
 const { test, expect } = require("@playwright/test");
 
-test("has title", async ({ page }) => {
-  await page.goto("/featureflags");
+// loop 10 times
+for (let i = 0; i < 5; i++) {
+  // create a random string every time
+  let randomString = Math.random().toString(36).substring(7);
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Calculator/);
-});
+  test.skip("has title +"+i, async ({ page }) => {
+    await page.goto("/featureflags");
 
-test("Enter Name", async ({ page }) => {
-  await page.goto("/featureflags");
+    // Expect a title "to contain" a substring.
+    await expect(page).toHaveTitle(/Calculator/);
+  });
 
- // Fill name
-  await page.fill('input[id="name"]', 'John Doe');
+  test.skip("Enter Name +"+i, async ({ page }) => {
+    await page.goto("/featureflags");
 
-  // Click text=Submit
-  await page.click('text=Submit');
-});
+  // Fill name
+    await page.fill('input[id="name"]', `John ${randomString}` );
 
-test("adds 2 numbers", async ({ page }) => {
-  await page.goto("/featureflags");
+    // Click text=Submit
+    await page.click('text=Submit');
+  });
 
-   // Fill name
-   await page.fill('input[id="name"]', 'John Doe');
+  test("adds 2 numbers +"+i, async ({ page }) => {
+    await page.goto("/featureflags");
 
-   // Click text=Submit
-   await page.click('text=Submit');
+    // Fill name
+    await page.fill('input[id="name"]', `John ${randomString}` );
 
-  // Click button 2
-  await page.click('text=2');
-  
-  // Click text=Add
-  await page.click('text=+');
+    // Click text=Submit
+    await page.click('text=Submit');
 
-  // Click text=3
-  await page.click('text=3');
+    // Click button 2
+    await page.click('text=2');
+    
+    // Click text=Add
+    await page.click('text=+');
+
+    // Click text=-
+    await page.click('text=-');
 
     // Click text= =
     await page.click('text==');
 
-  // expect 5 to be in the page
-  const result = await page.locator('.result');
-  await expect(result).toHaveText('5');
-});
+    // expect 5 to be in the page
+    const result = await page.locator('.result');
+    await expect(result).toHaveText('Error');
+  });
+};
