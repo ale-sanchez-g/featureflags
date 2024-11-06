@@ -1,6 +1,10 @@
 name: Mixed inputs
 
 on:
+    #on PR
+  pull_request: 
+    types: [opened, synchronize, reopened, closed]
+    #on demand
   workflow_dispatch:
     inputs:
       name:
