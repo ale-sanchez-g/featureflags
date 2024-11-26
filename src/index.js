@@ -9,6 +9,11 @@ import { asyncWithLDProvider } from 'launchdarkly-react-client-sdk';
 (async () => {
   const LDProvider = await asyncWithLDProvider({
     clientSideID: process.env.REACT_APP_CLIENT_SIDE_ID ||'enter-client-side-id-here',
+    options: { 
+      application: {
+        id: "calculator-web-app",
+        version: "1.0.0"
+    } }
   });
 
 ReactDOM.createRoot(document.getElementById("root")).render(
