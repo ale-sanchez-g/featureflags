@@ -26,12 +26,12 @@ const ScientificCalculator = ({ client }) => {
             let diff = (endTime - startTime);
             console.log('Time taken to calculate: ', diff);
             // Send data to LaunchDarkly using track
-            client.track('calculationTime', { duration: diff });
+            client.track('scinCalculationTime', { duration: diff });
             // sendMetricToDynatrace('classicCalculation,app="calculator"', diff)
         } catch (error) {
             setResult('Error');
             // Send data to LaunchDarkly using track
-            client.track('errorCalculation', { calcError: true });
+            client.track('scinErrorCalculation', { calcError: true });
         }
     };
 
