@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFlags } from 'launchdarkly-react-client-sdk';
 // import sendMetricToDynatrace from './SendMetrics.js';
 
 const ClassicCalculator = ({ client }) => {
-    const { advanceFunctions } = useFlags();
+    const { advanceFunctions, colorChange} = useFlags();
     const [input, setInput] = useState('');
     const [result, setResult] = useState('');
+    const [buttonClass, setButtonClass] = useState('special-key-2');
+
+    
+    useEffect(() => {
+      setButtonClass(colorChange ? 'special-key' : 'special-key-2');
+  }, [colorChange]);
 
     const handleClick = (value) => {
         setInput(input + value);
@@ -63,11 +69,25 @@ const ClassicCalculator = ({ client }) => {
             <button onClick={() => handleClick('1')}>1</button>
             <button onClick={() => handleClick('2')}>2</button>
             <button onClick={() => handleClick('3')}>3</button>
-            {advanceFunctions && <button className="special-key" onClick={() => handleClick('(')}>(</button>}
-
+            {advanceFunctions && (
+            <button
+              className={buttonClass}
+              onClick={() => handleClick('(')}
+            >
+              (
+            </button>
+            )}
+            
             <button className="zero" onClick={() => handleClick('0')}>0</button>
             <button onClick={() => handleClick('.')}>.</button>
-            {advanceFunctions && <button className="special-key" onClick={() => handleClick(')')}>)</button>}
+            {advanceFunctions && (
+            <button 
+            className={buttonClass}
+            onClick={() => handleClick(')')}
+            >
+              )
+            </button>
+          )}
 
         </div>
       </div>

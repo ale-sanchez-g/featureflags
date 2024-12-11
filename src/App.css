@@ -89,3 +89,8 @@ button.special-key {
   background-color: #bf11d3;
   color: #fff;
 }
+
+button.special-key-2 {
+  background-color: hsl(143, 85%, 45%);
+  color: #fff;
+}

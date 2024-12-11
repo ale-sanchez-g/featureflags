@@ -12,7 +12,7 @@ import { asyncWithLDProvider } from 'launchdarkly-react-client-sdk';
     options: { 
       application: {
         id: "calculator-web-app",
-        version: "1.0.0"
+        version: "1.0.1"
     } }
   });
 
