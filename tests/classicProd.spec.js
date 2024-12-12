@@ -1,4 +1,11 @@
-// @ts-check
+const { DynatraceMetricsReporter } = require('../obs/dynatraceMetrics.js');
+
+// Initialize Dynatrace reporter
+const dynatraceReporter = new DynatraceMetricsReporter(
+  "noj90533", 
+  process.env.DYNATRACE_API_TOKEN
+);
+
 const { test, expect } = require("@playwright/test");
 
 test.beforeEach(async ({ page }) => {
@@ -34,7 +41,7 @@ test("adds 2 numbers", async ({ page }) => {
   await expect(result).toHaveText("5");
 });
 
-test("Error", async ({ page }) => {
+test("Broken Flow", async ({ page }) => {
   // Click button 2
   await page.click("text=2");
 
@@ -50,4 +57,17 @@ test("Error", async ({ page }) => {
   // expect 5 to be in the page
   const result = await page.locator(".result");
   await expect(result).toHaveText("Error");
+});
+
+// Send a custom metric to Dynatrace after each test
+test.afterEach(async ({ page }, testInfo) => {
+  // Get the status of the  testResult.status property
+  const result = testInfo.status; 
+  console.log('Test Result:', result);
+
+  // Send the metric to Dynatrace
+  await dynatraceReporter.sendMetric({
+    metricKey: 'playwrightTestStatus,app="calculator"',
+    value: result === 'passed' ? 0 : 1
+  });
 });
