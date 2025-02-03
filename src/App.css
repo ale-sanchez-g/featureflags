@@ -19,6 +19,7 @@
 }
 
 .calculator {
+  animation: backgroundAnimation 10s infinite;
   width: 300px;
   background: #fff;
   border-radius: 8px;
@@ -27,6 +28,7 @@
 }
 
 .calculator-advanced {
+  animation: backgroundAnimation 10s infinite;
   width: 600px;
   background: #fff;
   border-radius: 8px;
@@ -93,4 +95,40 @@ button.special-key {
 button.special-key-2 {
   background-color: hsl(143, 85%, 45%);
   color: #fff;
+}
+/* Define keyframes for the animation */
+@keyframes backgroundAnimation {
+  0% {
+    background-color: #4267B2; /* Meta Blue */
+  }
+  10% {
+    background-color: #3B5998; /* Meta Dark Blue */
+  }
+  20% {
+    background-color: #1D2129; /* Meta Dark Grey */
+  }
+  30% {
+    background-color: #4B4F56; /* Meta Darker Grey */
+  }
+  40% {
+    background-color: #3A3F47; /* Meta Darkest Grey */
+  }
+  50% {
+    background-color: #8B9DC3; /* Meta Light Blue */
+  }
+  60% {
+    background-color: #3B5998; /* Meta Dark Blue */
+  }
+  70% {
+    background-color: #1D2129; /* Meta Dark Grey */
+  }
+  80% {
+    background-color: #4B4F56; /* Meta Darker Grey */
+  }
+  90% {
+    background-color: #3A3F47; /* Meta Darkest Grey */
+  }
+  100% {
+    background-color: #8B9DC3; /* Meta Light Blue */
+  }
 }
