@@ -4,11 +4,12 @@ import NameInput from './modules/NameInput';
 import { getBrowserInfo } from './browserInfo';
 import ClassicCalculator from './modules/ClassicCalculator';
 import ScientificCalculator from './modules/ScientificCalculator';
+import FunkyDemo from './modules/FunkyDemo';
 
 import './App.css';
 
 function App() {
-  const { showNameInput, calculatorStyle } = useFlags();
+  const { showNameInput, calculatorStyle, demoFlag } = useFlags();
   const ldClient = useLDClient();
   const [name, setName] = useState('');
   const handleNameSubmit = (name) => {
@@ -29,9 +30,23 @@ function App() {
     }
   }, [ldClient, name]);
   
+
+  // Check if the demoFlag is enabled
+  // If enabled, display a funky demo mode with a spinning emoji and a welcome message
+  // This will create a welcome page and not load the calculators
+  if (demoFlag) {
+    return (
+      <div className="App">
+        <FunkyDemo />
+      </div>
+    );
+  }
+
+
   if (showNameInput && !name) {
     return <NameInput onSubmit={handleNameSubmit} />;
   }
+
 
   // Display Classic Calculator if classicCalc flag is true
   if (calculatorStyle) {
