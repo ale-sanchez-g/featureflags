@@ -42,7 +42,6 @@ jobs:
     name: Enforce OPA PR Policy (must reference an issue)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: [sbom, codeql-analysis]
     steps:
       - uses: actions/checkout@v4
       - name: Install jq
