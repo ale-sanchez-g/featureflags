@@ -1,0 +1,72 @@
+name: Security CI Cycle
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+      - name: Generate SBOM (CycloneDX JSON)
+        run: syft . -o cyclonedx-json=sbom.json
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  secrets-scan:
+    name: Secrets Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: sbom
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Gitleaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          args: --path=. --redact
+
+  codeql-analysis:
+    name: CodeQL Static Analysis
+    runs-on: ubuntu-latest
+    needs: [sbom, secrets-scan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+
+  opa-pr-policy:
+    name: Enforce OPA PR Policy (must reference an issue)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [sbom, secrets-scan, codeql-analysis]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Install OPA CLI
+        run: |
+          OPA_URL="https://openpolicyagent.org/downloads/latest/opa_linux_amd64"
+          curl -L -o opa "$OPA_URL"
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+      - name: Prepare OPA input (PR body)
+        run: |
+          jq -n --arg body "$(jq -r .pull_request.body < "$GITHUB_EVENT_PATH")" '{"pull_request": {"body": $body}}' > pr_input.json
+      - name: Evaluate OPA policy
+        run: |
+          opa eval -i pr_input.json --data .github/opa/policies "data.pr_has_issue.allow" --format pretty
