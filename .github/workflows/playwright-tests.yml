@@ -1,13 +1,13 @@
 name: Run Playwright Tests
 
 on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
   # on demand
   workflow_dispatch:
   # on page build
   page_build:  
-  # scheduled
-  schedule:
-    - cron: '*/5 * * * *' # every 5 minutes
+
 jobs:
   playwright:
     name: 'Playwright Tests'
