@@ -47,15 +47,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
-      - name: Install OPA CLI
-        run: |
-          OPA_URL="https://openpolicyagent.org/downloads/latest/opa_linux_amd64"
-          curl -L -o opa "$OPA_URL"
-          chmod +x opa
-          sudo mv opa /usr/local/bin/opa
       - name: Prepare OPA input (PR body)
         run: |
           jq -n --arg body "$(jq -r .pull_request.body < "$GITHUB_EVENT_PATH")" '{"pull_request": {"body": $body}}' > pr_input.json
-      - name: Evaluate OPA policy
+      - name: Evaluate OPA policy (via Docker)
         run: |
-          opa eval -i pr_input.json --data .github/opa/policies "data.pr_has_issue.allow" --format pretty
+          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format pretty

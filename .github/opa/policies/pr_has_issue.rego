@@ -11,14 +11,14 @@ re_match(pattern, s) {
 has_issue_link {
   body := input.pull_request.body
   body != null
-  re_match("(?i)(closes|fixes|resolves)\\s+#\\d+", body)
+  re_match("(?i)(closes|fixes|resolves)[[:space:]]*#[0-9]+", body)
 }
 
 # Accept if PR body contains an explicit Issue reference like "Issue: #123" or "Issue #123"
 has_issue_reference {
   body := input.pull_request.body
   body != null
-  re_match("(?i)issue\s*[:#]?\s*#?\\d+", body)
+  re_match("(?i)issue[[:space:]]*[:#]?[[:space:]]*#?[0-9]+", body)
 }
 
 allow {
