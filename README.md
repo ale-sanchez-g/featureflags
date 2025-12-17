@@ -94,5 +94,5 @@ docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_
 - App entry: `src/index.js`
 - Feature flags usage: `src/App.js`
 - Calculator modules: `src/modules/ClassicCalculator.js`, `src/modules/ScientificCalculator.js`
-
-If you want, I can also add example `opa` test inputs under `opa/test/` and a small script to run the checks locally.
+- Playwright docs: https://playwright.dev/docs/intro
+- OPA docs: https://www.openpolicyagent.org/docs/latest/
