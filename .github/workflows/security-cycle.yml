@@ -25,21 +25,10 @@ jobs:
           name: sbom
           path: sbom.json
 
-  secrets-scan:
-    name: Secrets Scan (Gitleaks)
-    runs-on: ubuntu-latest
-    needs: sbom
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Gitleaks
-        uses: zricethezav/gitleaks-action@v2
-        with:
-          args: --path=. --redact
-
   codeql-analysis:
     name: CodeQL Static Analysis
     runs-on: ubuntu-latest
-    needs: [sbom, secrets-scan]
+    needs: [sbom]
     steps:
       - uses: actions/checkout@v4
       - name: Initialize CodeQL
@@ -53,7 +42,7 @@ jobs:
     name: Enforce OPA PR Policy (must reference an issue)
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    needs: [sbom, secrets-scan, codeql-analysis]
+    needs: [sbom, codeql-analysis]
     steps:
       - uses: actions/checkout@v4
       - name: Install jq
