@@ -1,0 +1,54 @@
+name: Security CI Cycle
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate SBOM (CycloneDX JSON)  
+        uses: anchore/sbom-action@v0  
+        with:  
+          path: .  
+          format: cyclonedx-json  
+          output-file: sbom.json 
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.json
+
+  codeql-analysis:
+    name: CodeQL Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: javascript
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v2
+
+  opa-pr-policy:
+    name: Enforce OPA PR Policy (must reference an issue)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      - name: Prepare OPA input (PR body)
+        run: |
+          jq -n --arg body "$(jq -r .pull_request.body < "$GITHUB_EVENT_PATH")" '{"pull_request": {"body": $body}}' > pr_input.json
+      - name: Evaluate OPA policy (via Docker)
+        run: |
+          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format pretty
