@@ -54,7 +54,7 @@ Option A — using Docker (same as CI):
 docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
 	-i /src/pr_input.json \
 	--data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty --fail-defined
+	"data.pr_has_issue.allow" --format pretty
 ```
 
 To create a quick test input:
@@ -66,18 +66,18 @@ Test the repository policy with match/nomatch inputs (if you keep test inputs un
 ```bash
 docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
 	-i /src/opa/test/pr_input_match.json --data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty --fail-defined
+	"data.pr_has_issue.allow" --format pretty
 
 docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
 	-i /src/opa/test/pr_input_nomatch.json --data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty --fail-defined
+	"data.pr_has_issue.allow" --format pretty
 ```
 
 Option B — using a locally installed `opa` binary:
 
 ```bash
 # Install: https://www.openpolicyagent.org/docs/latest/
-opa eval -i pr_input.json --data .github/opa/policies "data.pr_has_issue.allow" --format pretty --fail-defined
+opa eval -i pr_input.json --data .github/opa/policies "data.pr_has_issue.allow" --format pretty
 ```
 
 ### How the workflow builds input in CI
@@ -86,7 +86,7 @@ The CI workflow generates a small JSON with the PR body and runs the same `opa e
 
 ```bash
 jq -n --arg body "$(jq -r .pull_request.body < \"$GITHUB_EVENT_PATH\")" '{"pull_request":{"body":$body}}' > pr_input.json
-docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format pretty --fail-defined
+docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format pretty
 ```
 
 ## Notes & references
