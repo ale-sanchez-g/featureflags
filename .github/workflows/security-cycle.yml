@@ -3,9 +3,6 @@ name: Security CI Cycle
 on:
   pull_request:
     types: [opened, edited, reopened, synchronize]
-  push:
-    branches:
-      - main
   workflow_dispatch: {}
 
 jobs:
@@ -51,4 +48,4 @@ jobs:
           jq -n --arg body "$(jq -r .pull_request.body < "$GITHUB_EVENT_PATH")" '{"pull_request": {"body": $body}}' > pr_input.json
       - name: Evaluate OPA policy (via Docker)
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format pretty
+          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --format values | grep -q "true"
