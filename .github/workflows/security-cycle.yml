@@ -46,6 +46,7 @@ jobs:
       - name: Prepare OPA input (PR body)
         run: |
           jq -n --arg body "$(jq -r .pull_request.body < "$GITHUB_EVENT_PATH")" '{"pull_request": {"body": $body}}' > pr_input.json
+          cat pr_input.json
       - name: Evaluate OPA policy (via Docker)
         run: |
           docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --fail-defined --format pretty
