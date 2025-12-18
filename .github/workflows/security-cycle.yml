@@ -49,4 +49,4 @@ jobs:
           cat pr_input.json
       - name: Evaluate OPA policy (via Docker)
         run: |
-          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --fail-defined --format pretty
+          docker run --rm -v "$GITHUB_WORKSPACE":/src openpolicyagent/opa eval -i /src/pr_input.json --data /src/.github/opa/policies "data.pr_has_issue.allow" --fail-defined --format pretty --explain full
