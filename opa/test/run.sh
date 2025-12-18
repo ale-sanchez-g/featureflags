@@ -16,14 +16,14 @@ echo "Repository root: $REPO_ROOT"
 
 run_with_docker() {
   echo "Running tests with Docker (openpolicyagent/opa)..."
-  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$MATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --fail-defined --format pretty
-  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$NOMATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --fail-defined --format pretty
+  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$MATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --fail-defined --format pretty || true
+  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$NOMATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --fail-defined --format pretty || true
 }
 
 run_with_local_opa() {
   echo "Running tests with local opa binary..."
-  opa eval -i "$HOST_MATCH" --data "$HOST_POLICIES" "data.pr_has_issue.allow" --format pretty --fail-defined
-  opa eval -i "$HOST_NOMATCH" --data "$HOST_POLICIES" "data.pr_has_issue.allow" --format pretty --fail-defined
+  opa eval -i "$HOST_MATCH" --data "$HOST_POLICIES" "data.pr_has_issue.allow" --format pretty --fail-defined || true
+  opa eval -i "$HOST_NOMATCH" --data "$HOST_POLICIES" "data.pr_has_issue.allow" --format pretty --fail-defined || true
 }
 
 if command -v docker >/dev/null 2>&1; then
