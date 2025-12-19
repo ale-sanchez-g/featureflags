@@ -16,7 +16,7 @@ echo "Repository root: $REPO_ROOT"
 
 run_with_docker() {
   echo "Running tests with Docker (openpolicyagent/opa)..."
-  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$NOMATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --format pretty --explain full 
+  docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$NOMATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --format pretty --explain full
   docker run --rm -v "$REPO_ROOT":/src openpolicyagent/opa eval -i "$MATCH_INPUT" --data "$POLICIES_DIR" "data.pr_has_issue.allow" --format pretty --explain full
 }
 
