@@ -1,0 +1,24 @@
+name: OPA tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/opa/**'
+      - '.github/workflows/opa-test.yml'
+
+jobs:
+  opa-test:
+    name: Run OPA tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Install OPA
+        run: |
+          curl -L -o opa "https://openpolicyagent.org/downloads/latest/opa_linux_amd64"
+          chmod +x opa
+          sudo mv opa /usr/local/bin/opa
+      
+      - name: Run opa test
+        run: opa test .github/opa/policies -v
