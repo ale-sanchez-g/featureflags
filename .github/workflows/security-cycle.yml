@@ -43,6 +43,6 @@ jobs:
             echo "✓ Policy check passed"
             exit 0
           else
-            echo "✗ Policy check failed - PR must reference an issue within this project 'Closes ale-sanchez-g/featureflags#N', 'Fixes ale-sanchez-g/featureflags#N', or 'Resolves ale-sanchez-g/featureflags#N'"
+            echo "✗ Policy check failed - PR must reference an issue using one of these formats: 'Closes ale-sanchez-g/featureflags#N', 'Fixes ale-sanchez-g/featureflags#N', or 'Resolves ale-sanchez-g/featureflags#N'"
             exit 1
           fi
