@@ -1,0 +1,20 @@
+name: OPA tests
+
+on:
+  pull_request:
+    paths:
+      - '.github/opa/**'
+      - '.github/workflows/opa-test.yml'
+
+jobs:
+  opa-test:
+    name: Run OPA tests
+    runs-on: ubuntu-latest
+    container:
+      image: openpolicyagent/opa:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run opa test
+        run: opa test .github/opa/policies -v

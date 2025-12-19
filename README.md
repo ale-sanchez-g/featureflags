@@ -45,40 +45,25 @@ This repository includes a security CI workflow that runs OPA to enforce that Pu
 
 Note: the `pr_has_issue.rego` policy used Rego heads that were incompatible with the OPA parser used in CI; the rule names and bodies were updated to the supported Rego v1 form (uses `if { ... }` rule bodies). If you modified or added policies, ensure they parse with your OPA version.
 
-### Run OPA policy locally
+### Run OPA policy tests locally
 
-Option A — using Docker (same as CI):
+Note: the repository previously included a shell script-based test helper under `opa/test` (now removed). The policies now use OPA's native testing framework. Test cases live next to the policies (for example `.github/opa/policies/pr_has_issue_test.rego`).
+
+Run tests with Docker (same environment as CI):
 
 ```bash
 # from repo root
-docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
-	-i /src/pr_input.json \
-	--data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty
+docker run --rm -v "$PWD":/workspace -w /workspace openpolicyagent/opa:latest test .github/opa/policies -v
 ```
 
-To create a quick test input:
-```bash
-echo '{"pull_request":{"body":"Closes #123"}}' > pr_input.json
-```
-
-Test the repository policy with match/nomatch inputs (if you keep test inputs under `opa/test` or similar):
-```bash
-docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
-	-i /src/opa/test/pr_input_match.json --data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty
-
-docker run --rm -v "$PWD":/src openpolicyagent/opa eval \
-	-i /src/opa/test/pr_input_nomatch.json --data /src/.github/opa/policies \
-	"data.pr_has_issue.allow" --format pretty
-```
-
-Option B — using a locally installed `opa` binary:
+Or run locally with an installed `opa` binary:
 
 ```bash
 # Install: https://www.openpolicyagent.org/docs/latest/
-opa eval -i pr_input.json --data .github/opa/policies "data.pr_has_issue.allow" --format pretty
+opa test .github/opa/policies -v
 ```
+
+If you still need quick manual `eval` checks, you can use `opa eval` as before, but prefer `opa test` for automated verification.
 
 ### How the workflow builds input in CI
 
