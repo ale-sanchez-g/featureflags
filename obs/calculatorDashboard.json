@@ -1,0 +1,646 @@
+{
+  "version": 21,
+  "variables": [],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "## 📊 Calculator Business Health Dashboard\n\n**Real-time visibility** into the Calculator frontend availability, performance, and reliability metrics. This dashboard provides executive-level insights for Tier 2 critical application monitoring.\n\n---\n\n💰 **Business Impact of Downtime**\n\n| Metric | Impact |\n|--------|--------|\n| **Cost per minute** | $1,000 |\n| **NPS impact per incident** | -1 point |\n\n⚠️ *Every minute of downtime directly affects revenue and customer satisfaction.*"
+    },
+    "1": {
+      "title": "Active problems (7d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-7d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| filter event.status == \"ACTIVE\"\n| summarize count = countDistinct(display_id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Active problems",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "count",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-apdex-fair-default, #a9780f)"
+                },
+                "comparator": "≤",
+                "value": 1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-apdex-unacceptable-default, #cd3741)"
+                },
+                "comparator": "≤",
+                "label": "",
+                "value": 3
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "2": {
+      "title": "Synthetic tests monitored",
+      "type": "data",
+      "query": "fetch dt.entity.synthetic_test\n| filter id == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or id == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| summarize count = count()",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Synthetic monitors",
+          "isIconVisible": true,
+          "prefixIcon": "RadarIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "3": {
+      "title": "Last synthetic run (UTC)",
+      "type": "data",
+      "query": "fetch dt.entity.synthetic_test\n| filter id == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or id == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| summarize lastRun = max(lastExecutionTimestamp)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Last run timestamp",
+          "isIconVisible": true,
+          "prefixIcon": "ClockIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "4": {
+      "title": "Synthetic monitors",
+      "type": "data",
+      "query": "fetch dt.entity.synthetic_test\n| filter id == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or id == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| fields id, entity.name, isEnabled, browserMonitorSubtype, deviceProfile, syntheticMonitorFrequency, lastExecutionTimestamp, url, assignedLocations\n| sort lastExecutionTimestamp desc",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "columnOrder": [
+            "[\"id\"]",
+            "[\"entity.name\"]",
+            "[\"isEnabled\"]",
+            "[\"browserMonitorSubtype\"]",
+            "[\"deviceProfile\"]",
+            "[\"syntheticMonitorFrequency\"]",
+            "[\"lastExecutionTimestamp\"]",
+            "[\"url\"]",
+            "[\"assignedLocations\"]"
+          ]
+        },
+        "autoSelectVisualization": true,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "5": {
+      "title": "Application details",
+      "type": "data",
+      "query": "fetch dt.entity.application\n| filter id == \"APPLICATION-D9224DBD5E818C72\"\n| fields id, entity.name, entity.detected_name, applicationType, applicationInjectionType, tags, lifetime",
+      "visualization": "recordView",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "6": {
+      "type": "markdown",
+      "content": "**Operational guidance**\n- Active problems should be 0\n- Synthetic monitors should run every 60s\n- Investigate gaps in last run time\n- Confirm the detected URL matches production"
+    },
+    "7": {
+      "type": "markdown",
+      "content": "🎯 **Key Business Metrics**\n\n• **Problems**: Active incidents impacting users\n• **Availability**: % uptime (target: 99.95%)\n• **Error Budget**: Remaining downtime allowance\n• **MTTI**: Time to detect issues\n\n⚠️ **If RED**: Immediate escalation required"
+    },
+    "8": {
+      "title": "Failure trend (problems) - 7d",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-7d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| makeTimeseries time:event.start, { problems = count() }",
+      "visualization": "lineChart",
+      "visualizationSettings": { "autoSelectVisualization": true },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "9": {
+      "title": "Mean Time To Identify (MTTI)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| fieldsAdd detection_ms = toLong(timestamp - event.start) / 1000000\n| summarize avg_mtti_ms = avg(detection_ms)\n| fieldsAdd avg_mtti_seconds = round(avg_mtti_ms / 1000.0, decimals:2)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Avg MTTI (seconds)",
+          "isIconVisible": true,
+          "prefixIcon": "ClockIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "avg_mtti_seconds",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "<",
+                "value": 300
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "<",
+                "value": 900
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": "≥",
+                "value": 900
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "10": {
+      "title": "Availability SLO (30d) — target 99.95%",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fields availability_pct = round(avg_availability, decimals:2)",
+      "visualization": "gauge",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "availability_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": "<",
+                "value": 99
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "<",
+                "value": 99.95
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": ">=",
+                "value": 99.95
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "11": {
+      "type": "markdown",
+      "content": "📋 **Tier 2 Critical Thresholds**\n\n**Problems**: 🟢 0 | 🔴 ≥1\n**Availability**: 🟢 ≥99.95% | 🟡 99-99.95% | 🔴 <99%\n**Error Budget**: 🟢 >0% | 🔴 ≤0% (BREACHED)\n**MTTI**: 🟢 <5min | 🟡 5-10min | 🔴 ≥10min\n\n⚠️ **Current Status: CRITICAL** - Immediate action required!"
+    },
+    "12": {
+      "title": "Synthetic availability trend - 30d",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": { "colorPalette": "green" },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "13": {
+      "title": "Error budget remaining (30d)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = 99.95\n| fieldsAdd error_budget_total = 100 - slo_target\n| fieldsAdd error_budget_used = slo_target - avg_availability\n| fields remaining_budget_pct = round(error_budget_total - error_budget_used, decimals:2)",
+      "visualization": "gauge",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "remaining_budget_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": "<=",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "<=",
+                "value": 0.02
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": ">",
+                "value": 0.02
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "14": {
+      "title": "MTTI trend (avg detection) - 30d",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| fieldsAdd detection_ms = toLong(timestamp - event.start) / 1000000\n| makeTimeseries time:event.start, { avg_mtti_ms = avg(detection_ms) }",
+      "visualization": "lineChart",
+      "visualizationSettings": { "autoSelectVisualization": true },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "15": {
+      "title": "Error Budget Burndown (30d Rolling SLO)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }, interval: 1d\n| fieldsAdd rolling_avg = arrayMovingAvg(availability, 30)\n| fields timeframe, interval, rolling_availability = rolling_avg",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "leftYAxisSettings": {
+            "label": "Rolling Availability %",
+            "min": { "mode": "custom", "value": 85 },
+            "max": { "mode": "custom", "value": 100 }
+          },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 95
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 90
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": "≥",
+                "label": "",
+                "value": 60
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "16": {
+      "title": "Cost Impact (30d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| fieldsAdd duration_ms = if(event.status == \"ACTIVE\", then:toLong(now() - event.start), else:toLong(event.end - event.start))\n| fieldsAdd duration_minutes = round(duration_ms / 60000000000.0, decimals:2)\n| summarize total_downtime_minutes = sum(duration_minutes)\n| fieldsAdd cost_impact_usd = round(total_downtime_minutes * 1000, decimals:0)\n| fields cost_impact_usd",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Downtime Cost ($)",
+          "isIconVisible": true,
+          "prefixIcon": "DollarIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "cost_impact_usd",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "<=",
+                "value": 10000
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": "<=",
+                "value": 100000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": ">",
+                "value": 100000
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "17": {
+      "title": "NPS Impact (30d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| summarize total_incidents = count()\n| fieldsAdd nps_impact = total_incidents * -1",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "NPS Points Lost",
+          "isIconVisible": true,
+          "prefixIcon": "TrendDownIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "nps_impact",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": ">=",
+                "value": -5
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #eea53c)"
+                },
+                "comparator": ">=",
+                "value": -20
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #c62239)"
+                },
+                "comparator": "<",
+                "value": -20
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "18": {
+      "title": "Cost & Incident Impact Trend (30d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| fieldsAdd duration_ms = if(event.status == \"ACTIVE\", then:toLong(now() - event.start), else:toLong(event.end - event.start))\n| fieldsAdd duration_minutes = round(duration_ms / 60000000000.0, decimals:2)\n| fieldsAdd cost_impact_usd = duration_minutes * 1000\n| makeTimeseries time:event.start, { total_cost = sum(cost_impact_usd), incidents = count() }",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": {
+            "label": "Cost Impact ($)"
+          }
+        },
+        "autoSelectVisualization": false
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    }
+  },
+  "layouts": {
+    "0": { "x": 0, "y": 0, "w": 24, "h": 2 },
+    "1": { "x": 0, "y": 2, "w": 6, "h": 4 },
+    "2": { "x": 0, "y": 22, "w": 8, "h": 3 },
+    "3": { "x": 8, "y": 22, "w": 8, "h": 3 },
+    "4": { "x": 0, "y": 25, "w": 16, "h": 6 },
+    "5": { "x": 0, "y": 31, "w": 16, "h": 4 },
+    "6": { "x": 0, "y": 35, "w": 16, "h": 3 },
+    "7": { "x": 16, "y": 22, "w": 8, "h": 6 },
+    "8": { "x": 0, "y": 10, "w": 12, "h": 7 },
+    "9": { "x": 18, "y": 2, "w": 6, "h": 4 },
+    "10": { "x": 6, "y": 2, "w": 6, "h": 4 },
+    "11": { "x": 16, "y": 28, "w": 8, "h": 7 },
+    "12": { "x": 12, "y": 10, "w": 12, "h": 7 },
+    "13": { "x": 12, "y": 2, "w": 6, "h": 4 },
+    "14": { "x": 0, "y": 17, "w": 24, "h": 5 },
+    "15": { "x": 0, "y": 6, "w": 24, "h": 4 },
+    "16": { "x": 0, "y": 38, "w": 8, "h": 4 },
+    "17": { "x": 8, "y": 38, "w": 8, "h": 4 },
+    "18": { "x": 0, "y": 42, "w": 24, "h": 6 }
+  },
+  "importedWithCode": false,
+  "settings": {},
+  "annotations": []
+}

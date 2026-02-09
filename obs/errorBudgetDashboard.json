@@ -1,0 +1,802 @@
+{
+  "version": 21,
+  "variables": [
+    {
+      "version": 2,
+      "key": "slo_target",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "99.9"
+    },
+    {
+      "version": 2,
+      "key": "slow_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "1"
+    },
+    {
+      "version": 2,
+      "key": "medium_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "3"
+    },
+    {
+      "version": 2,
+      "key": "fast_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "5"
+    },
+    {
+      "version": 2,
+      "key": "critical_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "10"
+    }
+  ],
+  "tiles": {
+    "0": {
+      "type": "markdown",
+      "content": "## 🎯 Error Budget & Burn Rate Dashboard\n\n**Configurable SLO-based error budget tracking** with burn rate categorization and alerting thresholds.\n\n---\n\n| Parameter | Value |\n|-----------|-------|\n| **SLO Target** | `$slo_target`% |\n| **Slow Burn** | ≤`$slow_pct`% of budget |\n| **Medium Burn** | ≤`$medium_pct`% of budget |\n| **Fast Burn** | ≤`$fast_pct`% of budget |\n| **Critical Burn** | ≥`$critical_pct`% of budget |\n\n⚠️ *Adjust variables above to change SLO and burn category thresholds.*"
+    },
+    "1": {
+      "type": "markdown",
+      "content": "### 🔥 Burn Rate Categories\n\n| Burn Rate | What It Means | Action |\n|-----------|---------------|--------|\n| **≤$slow_pct%** | Slow burn (healthy) | ✅ Safe to deploy and experiment |\n| **≤$medium_pct%** | Medium burn (caution) | ⚠️ Be thoughtful about deployments |\n| **≤$fast_pct%** | Fast burn (alert) | 🔴 Minimize risky changes |\n| **≥$critical_pct%** | Critical (emergency) | 🚨 Focus on stability only |"
+    },
+    "2": {
+      "title": "Error Budget Total (minutes)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = round((100.0 - slo_target) / 100.0 * total_minutes_in_30d, decimals:2)\n| fields error_budget_total_minutes",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Error Budget (min)",
+          "isIconVisible": true,
+          "prefixIcon": "ClockIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "3": {
+      "title": "Budget Consumed (minutes)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = (100.0 - slo_target) / 100.0 * total_minutes_in_30d\n| fieldsAdd downtime_minutes = (100.0 - avg_availability) / 100.0 * total_minutes_in_30d\n| fieldsAdd budget_consumed_minutes = round(downtime_minutes, decimals:2)\n| fields budget_consumed_minutes",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Budget Consumed (min)",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "budget_consumed_minutes",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 22
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 22
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "4": {
+      "title": "Budget Consumed (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = (100.0 - slo_target) / 100.0 * total_minutes_in_30d\n| fieldsAdd downtime_minutes = (100.0 - avg_availability) / 100.0 * total_minutes_in_30d\n| fieldsAdd budget_consumed_pct = round(downtime_minutes / error_budget_total_minutes * 100.0, decimals:2)\n| fields budget_consumed_pct",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Budget Consumed %",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "budget_consumed_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 50
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 80
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 80
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "5": {
+      "title": "Budget Remaining (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = (100.0 - slo_target) / 100.0 * total_minutes_in_30d\n| fieldsAdd downtime_minutes = (100.0 - avg_availability) / 100.0 * total_minutes_in_30d\n| fieldsAdd budget_remaining_pct = round((error_budget_total_minutes - downtime_minutes) / error_budget_total_minutes * 100.0, decimals:2)\n| fields budget_remaining_pct",
+      "visualization": "gauge",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "budget_remaining_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": "≤",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 50
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": ">",
+                "value": 50
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "6": {
+      "title": "Current Burn Category (24h)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-1d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability_1d = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd slow_threshold = $slow_pct\n| fieldsAdd medium_threshold = $medium_pct\n| fieldsAdd critical_threshold = $critical_pct\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = (100.0 - slo_target) / 100.0 * total_minutes_in_30d\n| fieldsAdd minutes_in_1d = 24.0 * 60.0\n| fieldsAdd downtime_1d_minutes = (100.0 - avg_availability_1d) / 100.0 * minutes_in_1d\n| fieldsAdd monthly_burn_rate_pct = round(downtime_1d_minutes / error_budget_total_minutes * 100.0 * 30.0, decimals:2)\n| fieldsAdd burn_category = if(monthly_burn_rate_pct < slow_threshold, then:\"Slow (healthy)\", else:if(monthly_burn_rate_pct < medium_threshold, then:\"Medium (caution)\", else:if(monthly_burn_rate_pct < critical_threshold, then:\"Fast (alert)\", else:\"Critical (emergency)\")))\n| fields burn_category",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Burn Category",
+          "isIconVisible": true,
+          "prefixIcon": "FireIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "7": {
+      "title": "Projected Monthly Burn Rate (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-1d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability_1d = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = (100.0 - slo_target) / 100.0 * total_minutes_in_30d\n| fieldsAdd minutes_in_1d = 24.0 * 60.0\n| fieldsAdd downtime_1d_minutes = (100.0 - avg_availability_1d) / 100.0 * minutes_in_1d\n| fieldsAdd monthly_burn_rate_pct = round(downtime_1d_minutes / error_budget_total_minutes * 100.0 * 30.0, decimals:2)\n| fields monthly_burn_rate_pct",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Monthly Burn Rate %",
+          "isIconVisible": true,
+          "prefixIcon": "TrendUpIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "monthly_burn_rate_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 1
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 3
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-danger-default, #e6521f)"
+                },
+                "comparator": "≤",
+                "value": 10
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 10
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "8": {
+      "title": "Error Budget Summary (30d)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd slow_threshold = $slow_pct\n| fieldsAdd medium_threshold = $medium_pct\n| fieldsAdd fast_threshold = $fast_pct\n| fieldsAdd critical_threshold = $critical_pct\n| fieldsAdd total_minutes_in_30d = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_total_minutes = round((100.0 - slo_target) / 100.0 * total_minutes_in_30d, decimals:2)\n| fieldsAdd downtime_minutes = round((100.0 - avg_availability) / 100.0 * total_minutes_in_30d, decimals:2)\n| fieldsAdd budget_consumed_pct = round(downtime_minutes / error_budget_total_minutes * 100.0, decimals:2)\n| fieldsAdd budget_remaining_pct = round(100.0 - budget_consumed_pct, decimals:2)\n| fieldsAdd burn_category = if(budget_consumed_pct < slow_threshold, then:\"🟢 Slow (healthy)\", else:if(budget_consumed_pct < medium_threshold, then:\"🟡 Medium (caution)\", else:if(budget_consumed_pct < critical_threshold, then:\"🟠 Fast (alert)\", else:\"🔴 Critical (emergency)\")))\n| fields slo_target, avg_availability, error_budget_total_minutes, downtime_minutes, budget_consumed_pct, budget_remaining_pct, burn_category",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "columnOrder": [
+            "[\"slo_target\"]",
+            "[\"avg_availability\"]",
+            "[\"error_budget_total_minutes\"]",
+            "[\"downtime_minutes\"]",
+            "[\"budget_consumed_pct\"]",
+            "[\"budget_remaining_pct\"]",
+            "[\"burn_category\"]"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "9": {
+      "title": "Burn Category Thresholds Reference",
+      "type": "data",
+      "query": "data record(slo_target = $slo_target, slow_pct = $slow_pct, medium_pct = $medium_pct, fast_pct = $fast_pct, critical_pct = $critical_pct)\n| fieldsAdd total_minutes = 30.0 * 24.0 * 60.0\n| fieldsAdd error_budget_minutes = round((100.0 - slo_target) / 100.0 * total_minutes, decimals:2)\n| fieldsAdd slow_minutes = round(error_budget_minutes * slow_pct / 100, decimals:2)\n| fieldsAdd medium_minutes = round(error_budget_minutes * medium_pct / 100, decimals:2)\n| fieldsAdd fast_minutes = round(error_budget_minutes * fast_pct / 100, decimals:2)\n| fieldsAdd critical_minutes = round(error_budget_minutes * critical_pct / 100, decimals:2)\n| fields error_budget_minutes, slow_minutes, medium_minutes, fast_minutes, critical_minutes",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "columnOrder": [
+            "[\"error_budget_minutes\"]",
+            "[\"slow_minutes\"]",
+            "[\"medium_minutes\"]",
+            "[\"fast_minutes\"]",
+            "[\"critical_minutes\"]"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "10": {
+      "title": "Availability Trend (30d) with SLO Target",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }, interval: 1d\n| fieldsAdd rolling_avg = arrayMovingAvg(availability, 7)\n| fields timeframe, interval, availability, rolling_avg",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": {
+            "label": "Availability %",
+            "min": { "mode": "custom", "value": 50 },
+            "max": { "mode": "custom", "value": 100 }
+          },
+          "gapPolicy": "connect",
+          "colorPalette": "green"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "SLO Target",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≥",
+                "value": 99.9
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≥",
+                "value": 95
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": "<",
+                "value": 95
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "11": {
+      "title": "Error Budget Burndown (30d)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }, interval: 1d\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd error_budget_pct = (100.0 - slo_target) * 30\n| fieldsAdd downtime_pct = 100 - availability[]\n| fieldsAdd cumulative_downtime_pct = arrayCumulativeSum(downtime_pct)\n| fieldsAdd budget_remaining = error_budget_pct - cumulative_downtime_pct[]\n| fields timeframe, interval, budget_remaining",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Budget Remaining (% pts)" },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "Budget Exhausted",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": ">",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": "≤",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "12": {
+      "title": "Daily Burn Rate (% of monthly budget per day)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }, interval: 1d\n| fieldsAdd slo_target = $slo_target\n| fieldsAdd error_budget_total_pct = (100.0 - slo_target) * 30\n| fieldsAdd daily_downtime_pct = 100 - availability[]\n| fieldsAdd daily_burn_rate = daily_downtime_pct[] / error_budget_total_pct * 100\n| fields timeframe, interval, daily_burn_rate",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Daily Burn Rate (% of budget)" },
+          "colorPalette": "warm"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 3.33
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 10
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-danger-default, #e6521f)"
+                },
+                "comparator": "≤",
+                "value": 33.3
+              },
+              {
+                "id": 3,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 33.3
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "13": {
+      "title": "Availability SLO Gauge (30d)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.browser.availability), from: now()-30d, filter:{ in(dt.entity.synthetic_test, \"SYNTHETIC_TEST-5EC0C08020E249C7\", \"SYNTHETIC_TEST-4E92A5075C3A306C\") }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fields availability_pct = round(avg_availability, decimals:2)",
+      "visualization": "gauge",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "availability_pct",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": "<",
+                "value": 95
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "<",
+                "value": 99.9
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≥",
+                "value": 99.9
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "14": {
+      "title": "Active Problems (7d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-7d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| filter event.status == \"ACTIVE\"\n| summarize count = countDistinct(display_id)",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Active Problems",
+          "isIconVisible": true,
+          "prefixIcon": "WarningIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "count",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 0
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 1
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "15": {
+      "title": "Problem Trend (7d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-7d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| makeTimeseries time:event.start, { problems = count() }",
+      "visualization": "lineChart",
+      "visualizationSettings": { "autoSelectVisualization": false },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 2,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    },
+    "16": {
+      "type": "markdown",
+      "content": "### 📋 Operational Guidance\n\n**When to act based on Burn Category:**\n\n| Category | Action Required |\n|----------|----------------|\n| 🟢 **Slow** | No action. Safe to deploy. |\n| 🟡 **Medium** | Monitor closely. Be thoughtful about deployments. |\n| 🟠 **Fast** | Minimize risky changes. Investigate root cause. |\n| 🔴 **Critical** | **STOP** all deployments. Focus on stability only. |\n\n---\n**Error Budget Formula:**\n- Budget (min) = `(100 - SLO%) / 100 × 30d × 24h × 60m`\n- Burn Rate = `daily_downtime / total_budget × 100 × 30`"
+    },
+    "17": {
+      "title": "Downtime Cost Impact (30d)",
+      "type": "data",
+      "query": "fetch dt.davis.problems, from: now()-30d\n| expand affected_entity_ids\n| filter affected_entity_ids == \"APPLICATION-D9224DBD5E818C72\" or affected_entity_ids == \"SYNTHETIC_TEST-5EC0C08020E249C7\" or affected_entity_ids == \"SYNTHETIC_TEST-4E92A5075C3A306C\"\n| dedup display_id\n| fieldsAdd duration_ms = if(event.status == \"ACTIVE\", then:toLong(now() - event.start), else:toLong(event.end - event.start))\n| fieldsAdd duration_minutes = round(duration_ms / 60000000000.0, decimals:2)\n| summarize total_downtime_minutes = sum(duration_minutes)\n| fieldsAdd cost_impact_usd = round(total_downtime_minutes * 1000, decimals:0)\n| fields cost_impact_usd",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "Downtime Cost ($)",
+          "isIconVisible": true,
+          "prefixIcon": "DollarIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "cost_impact_usd",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              {
+                "id": 0,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)"
+                },
+                "comparator": "≤",
+                "value": 10000
+              },
+              {
+                "id": 1,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)"
+                },
+                "comparator": "≤",
+                "value": 100000
+              },
+              {
+                "id": 2,
+                "color": {
+                  "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)"
+                },
+                "comparator": ">",
+                "value": 100000
+              }
+            ]
+          }
+        ]
+      },
+      "querySettings": {
+        "maxResultRecords": 1000,
+        "defaultScanLimitGbytes": 500,
+        "maxResultMegaBytes": 1,
+        "defaultSamplingRatio": 10,
+        "enableSampling": false
+      },
+      "davis": {
+        "enabled": false,
+        "davisVisualization": { "isAvailable": true }
+      }
+    }
+  },
+  "layouts": {
+    "0": { "x": 0, "y": 0, "w": 16, "h": 8 },
+    "1": { "x": 16, "y": 0, "w": 8, "h": 8 },
+    "2": { "x": 0, "y": 8, "w": 6, "h": 3 },
+    "3": { "x": 6, "y": 8, "w": 6, "h": 3 },
+    "4": { "x": 12, "y": 8, "w": 6, "h": 3 },
+    "5": { "x": 18, "y": 8, "w": 6, "h": 3 },
+    "6": { "x": 0, "y": 11, "w": 8, "h": 4 },
+    "7": { "x": 8, "y": 11, "w": 8, "h": 4 },
+    "8": { "x": 0, "y": 15, "w": 24, "h": 4 },
+    "9": { "x": 16, "y": 11, "w": 8, "h": 4 },
+    "10": { "x": 0, "y": 19, "w": 12, "h": 6 },
+    "11": { "x": 12, "y": 19, "w": 12, "h": 6 },
+    "12": { "x": 0, "y": 25, "w": 24, "h": 6 },
+    "13": { "x": 0, "y": 31, "w": 6, "h": 4 },
+    "14": { "x": 6, "y": 31, "w": 6, "h": 4 },
+    "15": { "x": 12, "y": 31, "w": 12, "h": 4 },
+    "16": { "x": 0, "y": 35, "w": 12, "h": 9 },
+    "17": { "x": 12, "y": 35, "w": 11, "h": 9 }
+  },
+  "importedWithCode": false,
+  "settings": {},
+  "annotations": []
+}
