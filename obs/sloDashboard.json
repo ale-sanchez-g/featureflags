@@ -1,0 +1,415 @@
+{
+  "version": 21,
+  "variables": [
+    {
+      "version": 2,
+      "key": "slo_target",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "60"
+    },
+    {
+      "version": 2,
+      "key": "eval_days",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "7"
+    },
+    {
+      "version": 2,
+      "key": "slow_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "2"
+    },
+    {
+      "version": 2,
+      "key": "medium_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "5"
+    },
+    {
+      "version": 2,
+      "key": "fast_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "10"
+    },
+    {
+      "version": 2,
+      "key": "critical_pct",
+      "type": "text",
+      "visible": true,
+      "defaultValue": "20"
+    }
+  ],
+  "tiles": {
+    "0": {
+      "title": "🚦 DEPLOYMENT GATE",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd allowed_downtime = (100.0 - slo_target) / 100.0 * total_minutes\n| fieldsAdd actual_downtime = (100.0 - avg_availability) / 100.0 * total_minutes\n| fieldsAdd budget_consumed_pct = round(actual_downtime / allowed_downtime * 100.0, decimals:1)\n| fieldsAdd deployment_gate = if(budget_consumed_pct <= 50, then:1, else:if(budget_consumed_pct <= 100, then:2, else:3))\n| fields deployment_gate",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": {
+          "label": "1 = GO    2 = CAUTION    3 = FROZEN",
+          "isIconVisible": true,
+          "prefixIcon": "CriticalIcon"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1,
+            "field": "deployment_gate",
+            "title": "",
+            "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≤", "value": 1 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 2 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "≥", "value": 3 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "1": {
+      "type": "markdown",
+      "content": "# 🎯 Devops1 Homepage Availability — SLO Dashboard\n\n**SLO Reference:** `Devops1 Homepage Availability`  \n**Monitor:** HTTP Check (`HTTP_CHECK-63169A43EEB83483`)\n\n| Parameter | Value |\n|-----------|-------|\n| **SLO Target** | `$slo_target`% |\n| **Evaluation Period** | `$eval_days` days |\n| **Burn Thresholds** | Slow ≤`$slow_pct`% · Medium ≤`$medium_pct`% · Fast ≤`$fast_pct`% · Critical ≥`$critical_pct`% |\n\n---\n\n| Gate | Budget Consumed | Action |\n|------|----------------|--------|\n| 🟢 **1 = GO** | ≤50% | Deploy freely |\n| 🟡 **2 = CAUTION** | 50–100% | Only critical changes |\n| 🔴 **3 = FROZEN** | >100% EXHAUSTED | **STOP EVERYTHING** |"
+    },
+    "2": {
+      "title": "SLO Status (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd slo_status = round(arrayAvg(availability), decimals:3)\n| fields slo_status",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "SLO Status", "isIconVisible": true, "prefixIcon": "CheckCircleIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "slo_status", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "<", "value": 60 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "<", "value": 90 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≥", "value": 90 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "3": {
+      "title": "Error Budget (% points above target)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd error_budget_pct = round(avg_availability - slo_target, decimals:3)\n| fields error_budget_pct",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Error Budget (SLI − Target)", "isIconVisible": true, "prefixIcon": "BalanceIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "error_budget_pct", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "≤", "value": 0 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 20 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": ">", "value": 20 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "4": {
+      "title": "Error Budget Remaining (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd error_budget_remaining_pct = round((avg_availability - slo_target) / (100.0 - slo_target) * 100.0, decimals:2)\n| fields error_budget_remaining_pct",
+      "visualization": "gauge",
+      "visualizationSettings": {
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "error_budget_remaining_pct", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "≤", "value": 0 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 50 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": ">", "value": 50 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "5": {
+      "title": "Budget Consumed (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd allowed_downtime = (100.0 - slo_target) / 100.0 * total_minutes\n| fieldsAdd actual_downtime = (100.0 - avg_availability) / 100.0 * total_minutes\n| fieldsAdd budget_consumed_pct = round(actual_downtime / allowed_downtime * 100.0, decimals:2)\n| fields budget_consumed_pct",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Budget Consumed %", "isIconVisible": true, "prefixIcon": "TrendUpIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "budget_consumed_pct", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≤", "value": 50 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 100 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": ">", "value": 100 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "6": {
+      "title": "Allowed Downtime (minutes)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd allowed_downtime_minutes = round((100.0 - slo_target) / 100.0 * total_minutes, decimals:2)\n| fields allowed_downtime_minutes",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Allowed Downtime (min)", "isIconVisible": true, "prefixIcon": "ClockIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "7": {
+      "title": "Actual Downtime (minutes)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd actual_downtime_minutes = round((100.0 - avg_availability) / 100.0 * total_minutes, decimals:2)\n| fields actual_downtime_minutes",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Actual Downtime (min)", "isIconVisible": true, "prefixIcon": "WarningIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "actual_downtime_minutes", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≤", "value": 10 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 100 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": ">", "value": 100 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "8": {
+      "title": "Budget Remaining (minutes)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd allowed_downtime = (100.0 - slo_target) / 100.0 * total_minutes\n| fieldsAdd actual_downtime = (100.0 - avg_availability) / 100.0 * total_minutes\n| fieldsAdd budget_remaining_minutes = round(allowed_downtime - actual_downtime, decimals:2)\n| fields budget_remaining_minutes",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Budget Remaining (min)", "isIconVisible": true, "prefixIcon": "ClockIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "budget_remaining_minutes", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "≤", "value": 0 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 2000 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": ">", "value": 2000 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "9": {
+      "title": "Current Burn Category",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-1d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability_1d = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd slow_threshold = toDouble($slow_pct)\n| fieldsAdd medium_threshold = toDouble($medium_pct)\n| fieldsAdd critical_threshold = toDouble($critical_pct)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd error_budget_total = (100.0 - slo_target) / 100.0 * total_minutes\n| fieldsAdd minutes_in_1d = 24.0 * 60.0\n| fieldsAdd downtime_1d = (100.0 - avg_availability_1d) / 100.0 * minutes_in_1d\n| fieldsAdd projected_burn_pct = round(downtime_1d / error_budget_total * 100.0 * toDouble($eval_days), decimals:2)\n| fieldsAdd burn_category = if(projected_burn_pct < slow_threshold, then:\"🟢 Slow (healthy)\", else:if(projected_burn_pct < medium_threshold, then:\"🟡 Medium (caution)\", else:if(projected_burn_pct < critical_threshold, then:\"🟠 Fast (alert)\", else:\"🔴 Critical (emergency)\")))\n| fields burn_category",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Burn Category (24h)", "isIconVisible": true, "prefixIcon": "FireIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "10": {
+      "title": "Projected Burn Rate (%)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-1d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability_1d = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd error_budget_total = (100.0 - slo_target) / 100.0 * total_minutes\n| fieldsAdd minutes_in_1d = 24.0 * 60.0\n| fieldsAdd downtime_1d = (100.0 - avg_availability_1d) / 100.0 * minutes_in_1d\n| fieldsAdd projected_burn_pct = round(downtime_1d / error_budget_total * 100.0 * toDouble($eval_days), decimals:2)\n| fields projected_burn_pct",
+      "visualization": "singleValue",
+      "visualizationSettings": {
+        "singleValue": { "label": "Projected Burn %", "isIconVisible": true, "prefixIcon": "TrendUpIcon" },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "projected_burn_pct", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≤", "value": 2 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 5 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-danger-default, #e6521f)" }, "comparator": "≤", "value": 20 },
+              { "id": 3, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": ">", "value": 20 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "11": {
+      "title": "SLO Summary",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }\n| fieldsAdd avg_availability = arrayAvg(availability)\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd slo_status = round(avg_availability, decimals:3)\n| fieldsAdd error_budget_pct = round(avg_availability - slo_target, decimals:3)\n| fieldsAdd error_budget_remaining_pct = round((avg_availability - slo_target) / (100.0 - slo_target) * 100.0, decimals:2)\n| fieldsAdd total_minutes = toDouble($eval_days) * 24.0 * 60.0\n| fieldsAdd allowed_downtime_minutes = round((100.0 - slo_target) / 100.0 * total_minutes, decimals:2)\n| fieldsAdd actual_downtime_minutes = round((100.0 - avg_availability) / 100.0 * total_minutes, decimals:2)\n| fieldsAdd budget_remaining_minutes = round(allowed_downtime_minutes - actual_downtime_minutes, decimals:2)\n| fieldsAdd budget_consumed_pct = round(actual_downtime_minutes / allowed_downtime_minutes * 100.0, decimals:2)\n| fields slo_target, slo_status, error_budget_pct, error_budget_remaining_pct, allowed_downtime_minutes, actual_downtime_minutes, budget_remaining_minutes, budget_consumed_pct",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "columnOrder": [
+            "[\"slo_target\"]",
+            "[\"slo_status\"]",
+            "[\"error_budget_pct\"]",
+            "[\"error_budget_remaining_pct\"]",
+            "[\"allowed_downtime_minutes\"]",
+            "[\"actual_downtime_minutes\"]",
+            "[\"budget_remaining_minutes\"]",
+            "[\"budget_consumed_pct\"]"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 2, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "12": {
+      "title": "Error Budget Burndown",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }, interval: 1d\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd error_budget_pct = (100.0 - slo_target) * toDouble($eval_days)\n| fieldsAdd downtime_pct = 100 - availability[]\n| fieldsAdd cumulative_downtime_pct = arrayCumulativeSum(downtime_pct)\n| fieldsAdd budget_remaining = error_budget_pct - cumulative_downtime_pct[]\n| fields timeframe, interval, budget_remaining",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Budget Remaining (% pts)" },
+          "gapPolicy": "connect"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "", "title": "Budget Exhausted", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": ">", "value": 0 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "≤", "value": 0 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 2, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "13": {
+      "title": "Availability Trend with SLO Target",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }, interval: 1d\n| fieldsAdd rolling_avg = arrayMovingAvg(availability, 3)\n| fields timeframe, interval, availability, rolling_avg",
+      "visualization": "lineChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": {
+            "label": "Availability %",
+            "min": { "mode": "custom", "value": 50 },
+            "max": { "mode": "custom", "value": 100 }
+          },
+          "gapPolicy": "connect",
+          "colorPalette": "green"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "", "title": "SLO Target (60%)", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≥", "value": 60 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": "<", "value": 60 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 2, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "14": {
+      "title": "Daily Burn Rate (% of budget per day)",
+      "type": "data",
+      "query": "timeseries availability = avg(dt.synthetic.http.availability), from: now()-7d, filter:{ dt.entity.http_check == \"HTTP_CHECK-63169A43EEB83483\" }, interval: 1d\n| fieldsAdd slo_target = toDouble($slo_target)\n| fieldsAdd error_budget_total_pct = (100.0 - slo_target) * toDouble($eval_days)\n| fieldsAdd daily_downtime_pct = 100 - availability[]\n| fieldsAdd daily_burn_rate = daily_downtime_pct[] / error_budget_total_pct * 100\n| fields timeframe, interval, daily_burn_rate",
+      "visualization": "barChart",
+      "visualizationSettings": {
+        "chartSettings": {
+          "legend": { "position": "bottom" },
+          "leftYAxisSettings": { "label": "Daily Burn Rate (% of budget)" },
+          "colorPalette": "warm"
+        },
+        "autoSelectVisualization": false,
+        "thresholds": [
+          {
+            "id": 1, "field": "", "title": "", "isEnabled": true,
+            "rules": [
+              { "id": 0, "color": { "Default": "var(--dt-colors-charts-status-ideal-default, #2f6862)" }, "comparator": "≤", "value": 5 },
+              { "id": 1, "color": { "Default": "var(--dt-colors-charts-status-warning-default, #f5d30f)" }, "comparator": "≤", "value": 14.3 },
+              { "id": 2, "color": { "Default": "var(--dt-colors-charts-danger-default, #e6521f)" }, "comparator": "≤", "value": 50 },
+              { "id": 3, "color": { "Default": "var(--dt-colors-charts-status-critical-default, #dc172a)" }, "comparator": ">", "value": 50 }
+            ]
+          }
+        ]
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 2, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    },
+    "15": {
+      "type": "markdown",
+      "content": "# 🚨 DEPLOYMENT FREEZE PROTOCOL\n\n**When Deployment Gate = 3 (FROZEN):**\n\n## ⛔ STOP ALL DEPLOYMENTS IMMEDIATELY\n\n1. **No feature releases** — only stability patches\n2. **No infrastructure changes** — freeze all configs\n3. **Focus 100%** on root cause analysis\n4. **Escalate** to engineering leadership\n5. **Postmortem required** before resuming\n\n---\n\n### 📋 Operational Guidance\n\n| Category | Action Required |\n|----------|----------------|\n| 🟢 **Slow** | No action. Safe to deploy. |\n| 🟡 **Medium** | Monitor closely. Be thoughtful. |\n| 🟠 **Fast** | Minimize risky changes. |\n| 🔴 **Critical** | **STOP** all deployments. |\n\n**Error Budget Formula:**  \nBudget (min) = `(100 − SLO%) / 100 × eval_days × 24h × 60m`"
+    },
+    "16": {
+      "title": "Burn Category Thresholds Reference",
+      "type": "data",
+      "query": "data record(slo_target = toDouble($slo_target), eval_days = toDouble($eval_days), slow_pct = toDouble($slow_pct), medium_pct = toDouble($medium_pct), fast_pct = toDouble($fast_pct), critical_pct = toDouble($critical_pct))\n| fieldsAdd total_minutes = eval_days * 24.0 * 60.0\n| fieldsAdd error_budget_minutes = round((100.0 - slo_target) / 100.0 * total_minutes, decimals:2)\n| fieldsAdd slow_minutes = round(error_budget_minutes * slow_pct / 100, decimals:2)\n| fieldsAdd medium_minutes = round(error_budget_minutes * medium_pct / 100, decimals:2)\n| fieldsAdd fast_minutes = round(error_budget_minutes * fast_pct / 100, decimals:2)\n| fieldsAdd critical_minutes = round(error_budget_minutes * critical_pct / 100, decimals:2)\n| fields error_budget_minutes, slow_minutes, medium_minutes, fast_minutes, critical_minutes",
+      "visualization": "table",
+      "visualizationSettings": {
+        "table": {
+          "columnOrder": [
+            "[\"error_budget_minutes\"]",
+            "[\"slow_minutes\"]",
+            "[\"medium_minutes\"]",
+            "[\"fast_minutes\"]",
+            "[\"critical_minutes\"]"
+          ]
+        },
+        "autoSelectVisualization": false,
+        "thresholds": []
+      },
+      "querySettings": { "maxResultRecords": 1000, "defaultScanLimitGbytes": 500, "maxResultMegaBytes": 1, "defaultSamplingRatio": 10, "enableSampling": false },
+      "davis": { "enabled": false, "davisVisualization": { "isAvailable": true } }
+    }
+  },
+  "layouts": {
+    "0":  { "x": 0,  "y": 0,  "w": 6,  "h": 5 },
+    "1":  { "x": 6,  "y": 0,  "w": 12, "h": 5 },
+    "2":  { "x": 18, "y": 0,  "w": 6,  "h": 5 },
+    "9":  { "x": 0,  "y": 5,  "w": 6,  "h": 3 },
+    "10": { "x": 6,  "y": 5,  "w": 6,  "h": 3 },
+    "5":  { "x": 12, "y": 5,  "w": 6,  "h": 3 },
+    "3":  { "x": 18, "y": 5,  "w": 6,  "h": 3 },
+    "4":  { "x": 0,  "y": 8,  "w": 6,  "h": 3 },
+    "6":  { "x": 6,  "y": 8,  "w": 6,  "h": 3 },
+    "7":  { "x": 12, "y": 8,  "w": 6,  "h": 3 },
+    "8":  { "x": 18, "y": 8,  "w": 6,  "h": 3 },
+    "11": { "x": 0,  "y": 11, "w": 24, "h": 3 },
+    "16": { "x": 0,  "y": 14, "w": 24, "h": 3 },
+    "12": { "x": 0,  "y": 17, "w": 12, "h": 6 },
+    "13": { "x": 12, "y": 17, "w": 12, "h": 6 },
+    "14": { "x": 0,  "y": 23, "w": 12, "h": 6 },
+    "15": { "x": 12, "y": 23, "w": 12, "h": 6 }
+  },
+  "importedWithCode": false,
+  "settings": {},
+  "annotations": []
+}
